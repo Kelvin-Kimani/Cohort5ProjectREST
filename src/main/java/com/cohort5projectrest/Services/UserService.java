@@ -30,10 +30,10 @@ public class UserService {
     Implementing HTTP POST
     */
     public User createUser(User user) throws IllegalStateException{
-//        Optional<User> userByEmail = Optional.ofNullable(userRepository.findByEmployeeEmailAddress(user.getEmployeeEmailAddress()));
-//        if (userByEmail.isPresent()){
-//            throw new IllegalStateException("Account with the same email exists!");
-//        }
+        Optional<User> userByEmail = Optional.ofNullable(userRepository.findByEmployeeEmailAddress(user.getEmployeeEmailAddress()));
+        if (userByEmail.isPresent()){
+            throw new IllegalStateException("Account with the same email exists!");
+        }
         userRepository.save(user);
         return user;
     }
@@ -48,21 +48,11 @@ public class UserService {
     public List<User> getUsers(){
         return userRepository.findAll();
     }
-    public List<User> getUsersWithRoles() {
-        return userRepository.findAllWithRoles();
+
+    public List<User> getUsersInOrganization(int organizationId){
+        return userRepository.findUsersByOrganization(organizationId);
     }
 
-//    public List<User> getUsersWithRolesAndByOrganization(int organizationId) {
-//        return userRepository.findAllWithRolesAndByOrganization(organizationId);
-//    }
-
-//    public List<User> getUsersWithoutRolesAndByOrganization(int organizationId) {
-//        return userRepository.findAllWithoutRolesAndByOrganization(organizationId);
-//    }
-
-    public List<User> getUsersWithoutRoles() {
-        return userRepository.findAllWithoutRoles();
-    }
 
     public User getUserById(int id) {
         return userRepository.findById(id)
@@ -72,18 +62,6 @@ public class UserService {
     public User getUserByEmail(String email) {
         return userRepository.findByEmployeeEmailAddress(email);
     }
-
-    public int numberOfUsersWithRoles(){
-        return userRepository.numberOfUsersWithRoles();
-    }
-
-//    public int numberOfUsersWithRolesAndByOrganization(int organizationId){
-//        return userRepository.numberOfUsersWithRolesAndByOrganization(organizationId);
-//    }
-//
-//    public List<User> getEligibleCoOwners(int organizationId, int userId){
-//        return userRepository.findEligibleCoOwnersOrganization(organizationId, userId);
-//    }
 
     /***----------------------- Forgot Password ---------------------**********/
 
@@ -119,29 +97,6 @@ public class UserService {
     public User getUserSetPasswordByToken(String passwordToken){
         return userRepository.findBySetPasswordToken(passwordToken);
     }
-
-//    public void updatePassword(User user, String newPassword){
-//        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-//        String encodedPassword = passwordEncoder.encode(newPassword);
-//
-//        user.setPassword(encodedPassword);
-//        user.setResetPasswordToken(null);
-//
-//        userRepository.save(user);
-//    }
-//
-//
-//    public void setFirstTimePassword(User user, String newPassword){
-//        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-//        String encodedPassword = passwordEncoder.encode(newPassword);
-//
-//        user.setPassword(encodedPassword);
-//        user.setSetPasswordToken(null);
-//
-//        userRepository.save(user);
-//    }
-
-
 
 
     /*UPDATE*/

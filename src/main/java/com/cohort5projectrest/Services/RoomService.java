@@ -33,19 +33,6 @@ public class RoomService {
         return roomRepository.findByRoomId(roomId);
     }
 
-//    public List<Room> showRoomsInOrganization(int organizationId){
-//        return roomRepository.findAllByOrganization(organizationId);
-//    }
-//
-//    public int noOfRooms(){
-//        return roomRepository.numberOfRooms();
-//    }
-//
-//    public int noOfRoomsInOrganization(int organizationId){
-//        return roomRepository.numberOfRoomsInOrganization(organizationId);
-//    }
-
-
     /******************                         DELETE                                          ****************/
 
     public void deleteRoom(int roomId){

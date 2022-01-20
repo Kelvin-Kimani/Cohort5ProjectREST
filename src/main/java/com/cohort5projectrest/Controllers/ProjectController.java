@@ -1,8 +1,11 @@
 package com.cohort5projectrest.Controllers;
 
+import com.cohort5projectrest.Entities.Organization;
 import com.cohort5projectrest.Entities.User;
+import com.cohort5projectrest.Services.OrganizationService;
 import com.cohort5projectrest.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,17 +20,27 @@ public class ProjectController {
 
 
     private UserService userService;
+    private OrganizationService organizationService;
 
     @Autowired
-    public ProjectController(UserService userService) {
+    public ProjectController(UserService userService, OrganizationService organizationService) {
         this.userService = userService;
+        this.organizationService = organizationService;
     }
 
-
     @PostMapping("/signup")
-    public ResponseEntity<User> createUser(@RequestBody User user){
-        userService.createUser(user);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<String> createUser(@RequestBody User user){
+
+        try {
+
+            userService.createUser(user);
+            return ResponseEntity.ok("Registered Successfully");
+
+        }catch(IllegalStateException illegalStateException){
+            //return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(user);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(illegalStateException.getMessage());
+        }
+
     }
 
     @GetMapping("/users")
@@ -35,9 +48,29 @@ public class ProjectController {
         return userService.getUsers();
     }
 
+//    Users in organization
+    @GetMapping("/users/organization/{organizationId}")
+    public List<User> getUsersInOrganization(@PathVariable int organizationId){
+        return userService.getUsersInOrganization(organizationId);
+    }
+
+    //Get organization of user
+//    @GetMapping("users/user/{userId}")
+//    public ResponseEntity<Organization> getOrganizationOfUser(@PathVariable int userId){
+//
+//        return ResponseEntity.ok();
+//    }
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<User> getUser(@PathVariable int userId){
         User user = userService.getUserById(userId);
+
+        return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/currentUser/{emailAddress}")
+    public ResponseEntity<User> getUserByEmailAddress(@PathVariable String emailAddress){
+        User user = userService.getUserByEmail(emailAddress);
 
         return ResponseEntity.ok(user);
     }
@@ -63,4 +96,20 @@ public class ProjectController {
 
         return ResponseEntity.ok(response);
     }
+
+
+
+    /************ ORGANIZATION *****************/
+    @PostMapping("/create/organization")
+    public ResponseEntity<Organization> createOrganization(@RequestBody Organization organization){
+
+        organizationService.createOrganization(organization);
+        return ResponseEntity.ok(organization);
+    }
+
+    @GetMapping("/organizations")
+    public List<Organization> getOrganizations(){
+        return organizationService.getOrganizations();
+    }
+
 }

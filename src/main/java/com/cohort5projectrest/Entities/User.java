@@ -1,5 +1,6 @@
 package com.cohort5projectrest.Entities;
 
+import com.fasterxml.jackson.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -40,12 +41,14 @@ public class User {
     private int failedAttempts;
     private Date lockTime;
 
-//    @ManyToOne
-//    @JoinColumn(name = "organization_id")
-//    @ToString.Exclude
-//    private Organization organization;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "organization_id")
+    @ToString.Exclude
+    @JsonBackReference
+    private Organization organization;
 //
 //    @ManyToMany(mappedBy = "users")
 //    @ToString.Exclude
 //    private List<Meeting> meetings;
+
 }

@@ -14,12 +14,6 @@ public interface RoomRepository extends JpaRepository<Room, Integer> {
     @Query("SELECT COUNT(r.roomId) FROM Room r")
     int numberOfRooms();
 
-//    @Query("SELECT COUNT(r.roomId) FROM Room r WHERE r.organization.organizationId =?1")
-//    int numberOfRoomsInOrganization(int organizationId);
-//
-//    @Query("SELECT r FROM Room r WHERE r.organization.organizationId = ?1")
-//    List<Room> findAllByOrganization(int organization);
-
     @Override
     void deleteById(Integer roomId);
 }

@@ -1,5 +1,6 @@
 package com.cohort5projectrest.Entities;
 
+import com.fasterxml.jackson.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,9 +23,10 @@ public class Organization {
     private String organizationName;
     private String organizationDescription;
 
-//    @OneToMany(mappedBy = "organization")
-//    @ToString.Exclude
-//    private List<User> users = new ArrayList<>();
+    @OneToMany(mappedBy = "organization", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @JsonManagedReference
+    private List<User> users = new ArrayList<>();
 //
 //    @OneToMany(mappedBy = "organization")
 //    @ToString.Exclude

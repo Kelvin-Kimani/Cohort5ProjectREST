@@ -43,7 +43,8 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return user.isAccountNonLocked();
+//        return user.isAccountNonLocked();
+        return true;
     }
 
     @Override
@@ -56,17 +57,6 @@ public class CustomUserDetails implements UserDetails {
         return true;
     }
 
-    public String getFullName(){
-        return this.user.getEmployeeFirstName() + " " + this.user.getEmployeeLastName();
-    }
-
-    //Update Current LoggedIn user
-    public void setFirstName(String firstName){
-        this.user.setEmployeeFirstName(firstName);
-    }
-    public void setLastName(String lastName){
-        this.user.setEmployeeLastName(lastName);
-    }
 
     public User getUser() {
         return this.user;

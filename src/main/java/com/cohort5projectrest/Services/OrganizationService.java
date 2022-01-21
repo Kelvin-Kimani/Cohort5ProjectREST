@@ -28,4 +28,12 @@ public class OrganizationService {
     public List<Organization> getOrganizations() {
         return organizationRepository.findAll();
     }
+
+    public Organization getOrganizationById(int organizationId){
+        //check if organization exists
+        boolean exists = organizationRepository.existsById(organizationId);
+        if (exists){
+            return organizationRepository.findByOrganizationId(organizationId);
+        } else throw new IllegalStateException("Organization with id " + organizationId + " doesn't exist");
+    }
 }

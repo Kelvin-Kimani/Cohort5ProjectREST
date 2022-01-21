@@ -15,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table
+@JsonIncludeProperties({"userId", "userRole", "employeeFirstName", "employeeLastName", "employeeEmailAddress", "employeePhoneNumber", "password"})
 public class User {
 
     @Id
@@ -25,30 +26,38 @@ public class User {
     //User defined
     private String employeeFirstName;
     private String employeeLastName;
-    private String employeeDepartment;
     private String employeeEmailAddress;
     private String employeePhoneNumber;
     private String password;
 
-    //Generated
-    private String resetPasswordToken;
-    private String setPasswordToken;
-
-    //Limit Login Attempts
-    @Column(columnDefinition = "tinyint(1) default 1")
-    private boolean accountNonLocked = true;
-
-    private int failedAttempts;
-    private Date lockTime;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "organization_id")
     @ToString.Exclude
-    @JsonBackReference
+//    @JsonManagedReference
+
     private Organization organization;
 //
 //    @ManyToMany(mappedBy = "users")
 //    @ToString.Exclude
 //    private List<Meeting> meetings;
 
+
+    public User(String userRole, String employeeFirstName, String employeeLastName, String employeeEmailAddress, String employeePhoneNumber, String password, Organization organization) {
+        this.userRole = userRole;
+        this.employeeFirstName = employeeFirstName;
+        this.employeeLastName = employeeLastName;
+        this.employeeEmailAddress = employeeEmailAddress;
+        this.employeePhoneNumber = employeePhoneNumber;
+        this.password = password;
+        this.organization = organization;
+    }
+
+    public User(String userRole, String employeeFirstName, String employeeLastName, String employeeEmailAddress, String employeePhoneNumber, String password) {
+        this.userRole = userRole;
+        this.employeeFirstName = employeeFirstName;
+        this.employeeLastName = employeeLastName;
+        this.employeeEmailAddress = employeeEmailAddress;
+        this.employeePhoneNumber = employeePhoneNumber;
+        this.password = password;
+    }
 }

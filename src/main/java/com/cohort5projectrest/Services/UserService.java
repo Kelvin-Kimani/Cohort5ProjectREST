@@ -1,48 +1,55 @@
 package com.cohort5projectrest.Services;
 
+import com.cohort5projectrest.Entities.Organization;
 import com.cohort5projectrest.Entities.User;
-import com.cohort5projectrest.Exceptions.UserNotFoundException;
+import com.cohort5projectrest.Repositories.OrganizationRepository;
 import com.cohort5projectrest.Repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-@Service
 @Transactional
+@Service
 public class UserService {
 
-    public static final int MAX_FAILED_ATTEMPTS = 4;
-    private static final long LOCK_TIME_DURATION = 30 * 60 * 1000; //30 Minutes in milliseconds
-
     private UserRepository userRepository;
+    private OrganizationRepository organizationRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository){
+    public UserService(UserRepository userRepository, OrganizationRepository organizationRepository){
+        this.userRepository = userRepository;
+        this.organizationRepository = organizationRepository;
+    }
+
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
+
 
     /*
     CREATE
     Implementing HTTP POST
     */
-    public User createUser(User user) throws IllegalStateException{
+    public User createUser(User user){
         Optional<User> userByEmail = Optional.ofNullable(userRepository.findByEmployeeEmailAddress(user.getEmployeeEmailAddress()));
         if (userByEmail.isPresent()){
             throw new IllegalStateException("Account with the same email exists!");
         }
+
+        //let's encode the password first
+        String encodedPassword = PasswordEncoderFactories.createDelegatingPasswordEncoder()
+                .encode(user.getPassword());
+
+        //set password as encoded
+        user.setPassword(encodedPassword);
+
         userRepository.save(user);
         return user;
     }
-
-    public void createSystemUserById(int id,
-                                 String role){
-        userRepository.updateUserRole(id, role);
-    }
-
 
     /*READ*/
     public List<User> getUsers(){
@@ -50,75 +57,42 @@ public class UserService {
     }
 
     public List<User> getUsersInOrganization(int organizationId){
-        return userRepository.findUsersByOrganization(organizationId);
+        //check if organization exists
+        boolean exists = organizationRepository.existsById(organizationId);
+        if (exists){
+            return userRepository.findUsersByOrganization(organizationId);
+        } else {
+            throw new IllegalStateException("Organization with id " + organizationId + " doesn't exist");
+        }
+    }
+
+    public Organization getUsersOrganization(int userId){
+        //get user first
+        Optional<User> userById = getUserById(userId);
+
+        return userById.get().getOrganization();
     }
 
 
-    public User getUserById(int id) {
-        return userRepository.findById(id)
-                .orElseThrow(()-> new IllegalStateException("User with id " + id + " does not exist."));
+    public Optional<User> getUserById(int id) {
+        Optional<User> userById = userRepository.findById(id);
+        if (userById.isEmpty()){
+            throw new IllegalStateException("User with id " + id + " does not exist.");
+        }
+
+        return userById;
+
     }
 
     public User getUserByEmail(String email) {
-        return userRepository.findByEmployeeEmailAddress(email);
-    }
+        Optional<User> userByEmail = Optional.ofNullable(userRepository.findByEmployeeEmailAddress(email));
 
-    /***----------------------- Forgot Password ---------------------**********/
-
-    public void updateResetPasswordToken(String token, String email) throws UserNotFoundException {
-        User user = userRepository.findByEmailAddressAndUserRole(email);
-
-        if (user != null){
-            user.setResetPasswordToken(token);
-            userRepository.save(user);
+        if (userByEmail.isEmpty()){
+            throw new IllegalStateException("User with the email " + email + " doesn't exist");
         }
-        else {
-            throw new UserNotFoundException("Could not find user with the email " + email);
-        }
-    }
 
-    public void updateSetPasswordToken(String token, String email) throws UserNotFoundException {
-        User user = userRepository.findByEmployeeEmailAddress(email);
-
-        if (user != null){
-            user.setSetPasswordToken(token);
-            userRepository.save(user);
-        }
-        else {
-            throw new UserNotFoundException("Could not find user with the email " + email);
-        }
-    }
-
-    public User getUserByToken(String resetPasswordToken){
-        return userRepository.findByResetPasswordToken(resetPasswordToken);
-    }
-
-
-    public User getUserSetPasswordByToken(String passwordToken){
-        return userRepository.findBySetPasswordToken(passwordToken);
-    }
-
-
-    /*UPDATE*/
-    public void updateUserRole(int id,
-                               String role){
-
-        User user = userRepository.findById(id)
-                .orElseThrow(()-> new IllegalStateException("User with the id does not exist"));
-
-        user.setUserRole(role);
-    }
-
-
-    public void updateUserDetails(int userId,
-                                  String firstName,
-                                  String lastname,
-                                  String phoneNumber){
-        userRepository.updateUserDetails(userId, firstName, lastname, phoneNumber);
-    }
-
-    public void deleteUserWithRoleById(int id){
-        userRepository.deleteUserRole(id);
+        User user = userByEmail.get();
+        return user;
     }
 
 
@@ -131,38 +105,4 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public void increaseFailedAttempts(User user) {
-        int newFailedAttempts = user.getFailedAttempts() + 1;
-        userRepository.updateUserFailedAttempts(newFailedAttempts, user.getEmployeeEmailAddress());
-    }
-
-    public void lock(User user) {
-        user.setAccountNonLocked(false);
-        user.setLockTime(new Date());
-
-        userRepository.save(user);
-    }
-
-    public boolean unlock(User user){
-        long lockTimeInMillis = user.getLockTime().getTime();
-        long currentTimeInMillis = System.currentTimeMillis();
-
-        //Duration expired
-        if (lockTimeInMillis + LOCK_TIME_DURATION < currentTimeInMillis){
-            user.setAccountNonLocked(true);
-            user.setLockTime(null);
-            user.setFailedAttempts(0);
-
-            userRepository.save(user);
-            return true;
-        }
-
-        else {
-            return false;
-        }
-    }
-
-    public void resetFailedAttempts(String employeeEmailAddress) {
-        userRepository.updateUserFailedAttempts(0, employeeEmailAddress);
-    }
 }

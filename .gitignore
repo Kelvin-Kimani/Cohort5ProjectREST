@@ -5,7 +5,6 @@ target/
 !**/src/test/**/target/
 src/main/resources/application.properties
 src/test/resources/application.properties
-src/test/java/com/cohort5projectrest/Repositories/UserRepositoryTest.java
 
 
 ### STS ###

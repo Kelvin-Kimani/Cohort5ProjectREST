@@ -15,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table
+@JsonIncludeProperties({"organizationId", "organizationName", "organizationDescription"})
 public class Organization {
 
     @Id
@@ -25,12 +26,12 @@ public class Organization {
 
     @OneToMany(mappedBy = "organization", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @ToString.Exclude
-    @JsonManagedReference
+
     private List<User> users = new ArrayList<>();
-//
-//    @OneToMany(mappedBy = "organization")
-//    @ToString.Exclude
-//    private List<Room> rooms = new ArrayList<>();
+
+    @OneToMany(mappedBy = "organization")
+    @ToString.Exclude
+    private List<Room> rooms = new ArrayList<>();
 //
 //    @OneToMany(mappedBy = "organization")
 //    @ToString.Exclude
@@ -40,4 +41,10 @@ public class Organization {
 //        this.organizationName = organizationName;
 //        this.users = users;
 //    }
+
+
+    public Organization(String organizationName, String organizationDescription) {
+        this.organizationName = organizationName;
+        this.organizationDescription = organizationDescription;
+    }
 }

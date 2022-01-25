@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
 
@@ -15,4 +16,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u FROM User u WHERE u.organization.organizationId = ?1")
     List<User> findUsersByOrganization(int organizationId);
 
+    @Query("SELECT u FROM User u WHERE u.employeeFirstName LIKE %?1%" +
+            "OR u.employeeLastName LIKE %?1%" +
+            "OR u.employeeEmailAddress LIKE %?1%")
+    List<User> searchUser(String keyword);
 }

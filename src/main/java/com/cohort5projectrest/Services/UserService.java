@@ -4,6 +4,8 @@ import com.cohort5projectrest.Entities.Organization;
 import com.cohort5projectrest.Entities.User;
 import com.cohort5projectrest.Repositories.OrganizationRepository;
 import com.cohort5projectrest.Repositories.UserRepository;
+import com.cohort5projectrest.Validators.EmailValidator;
+import com.cohort5projectrest.Validators.PasswordValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,11 @@ public class UserService {
 
     private UserRepository userRepository;
     private OrganizationRepository organizationRepository;
+    @Autowired
+    private EmailValidator emailValidator;
+
+    @Autowired
+    private PasswordValidator passwordValidator;
 
     @Autowired
     public UserService(UserRepository userRepository, OrganizationRepository organizationRepository){
@@ -29,7 +36,6 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-
     /*
     CREATE
     Implementing HTTP POST
@@ -40,15 +46,27 @@ public class UserService {
             throw new IllegalStateException("Account with the same email exists!");
         }
 
-        //let's encode the password first
-        String encodedPassword = PasswordEncoderFactories.createDelegatingPasswordEncoder()
-                .encode(user.getPassword());
+        //check if the email and password valid
+        String email = user.getEmployeeEmailAddress();
+        String password = user.getPassword();
 
-        //set password as encoded
-        user.setPassword(encodedPassword);
+        if (emailValidator.validate(email)){
 
-        userRepository.save(user);
-        return user;
+            if (passwordValidator.validate(password)){
+                //let's encode the password first
+                String encodedPassword = PasswordEncoderFactories.createDelegatingPasswordEncoder()
+                        .encode(password);
+
+                //set password as encoded
+                user.setPassword(encodedPassword);
+
+                userRepository.save(user);
+                return user;
+
+            } else throw new IllegalStateException("Password does not meet the required criteria");
+
+        } else throw new IllegalStateException("Email Address is not valid");
+        
     }
 
     /*READ*/
@@ -73,7 +91,6 @@ public class UserService {
         return userById.get().getOrganization();
     }
 
-
     public Optional<User> getUserById(int id) {
         Optional<User> userById = userRepository.findById(id);
         if (userById.isEmpty()){
@@ -95,6 +112,33 @@ public class UserService {
         return user;
     }
 
+    public List<User> searchUserByName(String keyword){
+        List<User> searchedUsers = userRepository.searchUser(keyword);
+        if (searchedUsers.isEmpty()){
+            throw new IllegalStateException("Users with keyword " + keyword + " not found");
+        }
+
+        return searchedUsers;
+    }
+    
+    /*Check Email*/
+    public boolean validEmail(String email){
+        boolean valid = emailValidator.validate(email);
+
+        if (valid){
+            return true;
+        } else return false;
+    }
+
+
+    /*Check Password*/
+    public boolean validPassword(String password){
+        boolean valid = passwordValidator.validate(password);
+
+        if (valid){
+            return true;
+        } else return false;
+    }
 
     /*DELETE*/
     public void deleteById(int id) {

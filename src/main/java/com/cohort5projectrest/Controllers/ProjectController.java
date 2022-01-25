@@ -1,21 +1,34 @@
 package com.cohort5projectrest.Controllers;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.cohort5projectrest.Entities.Organization;
 import com.cohort5projectrest.Entities.Room;
 import com.cohort5projectrest.Entities.User;
 import com.cohort5projectrest.Services.OrganizationService;
 import com.cohort5projectrest.Services.RoomService;
 import com.cohort5projectrest.Services.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
+@Slf4j
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/v1")
@@ -35,19 +48,6 @@ public class ProjectController {
         this.roomService = roomService;
     }
 
-    @PostMapping("/signup")
-    public Map<String, ResponseEntity<String>> createUser(@RequestBody User user){
-
-        try {
-
-            userService.createUser(user);
-            return Map.of("Registered Successfully", ResponseEntity.ok(user.toString()));
-
-        }catch(IllegalStateException illegalStateException){
-            return Map.of("Error", ResponseEntity.status(HttpStatus.BAD_REQUEST).body(illegalStateException.getMessage()));
-        }
-
-    }
 
     @GetMapping("/users")
     public List<User> getUsers(){
@@ -79,6 +79,12 @@ public class ProjectController {
         User user = userService.getUserByEmail(emailAddress);
 
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/searchUser")
+    public ResponseEntity<List<User>> searchUser(@RequestBody String keyword){
+        List<User> searchedUsers = userService.searchUserByName(keyword);
+        return ResponseEntity.ok(searchedUsers);
     }
 
     @PutMapping("/user/{userId}")
